@@ -30,7 +30,7 @@ library
     , text
     , transformers-base
     , vector
-    , yi
+    , yi >= 0.10.1
     , yi-language
     , yi-rope
 
