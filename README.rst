@@ -1,45 +1,45 @@
 
-  This plugin aims to bring some awesomeness of
-  fuzzy openers like emacs-helm and ctrlp.vim to yi.
+This plugin aims to bring some awesomeness of
+fuzzy openers like emacs-helm and ctrlp.vim to yi.
 
 
 Setup
 =====
 
-  This plugin provides a single function **fuzzyOpen**.
+This plugin provides a single function **fuzzyOpen**.
 
-  Refer to yi's example config for your preferred keymap
-  to see how to bind keys to actions.
+Refer to yi's example config for your preferred keymap
+to see how to bind keys to actions.
 
-  For emacs and cua it will probably look like this:
+For emacs and cua it will probably look like this::
 
-    (ctrlCh 'p' ?>>! fuzzyOpen)
+  (ctrlCh 'p' ?>>! fuzzyOpen)
 
-  And for vim keymap something like this:
+And for vim keymap something like this::
 
-    V.mkStringBindingY V.normal ("<C-p>", fuzzyOpen, id)
+  V.mkStringBindingY V.normal ("<C-p>", fuzzyOpen, id)
 
 Usage
 =====
 
-  <C-p> (or whatever mapping user chooses) starts fuzzy open dialog.
+<C-p> (or whatever mapping user chooses) starts fuzzy open dialog.
 
-  Typing something filters filelist.
+Typing something filters filelist.
 
-  <Esc> and <C-g> cancel the dialog.
+<Esc> and <C-g> cancel the dialog.
 
-  <Enter> opens currently selected file
-  in current (one that fuzzyOpen was initiated from) window.
+<Enter> opens currently selected file
+in current (one that fuzzyOpen was initiated from) window.
 
-  <C-t> opens currently selected file in a new tab.
-  <C-s> opens currently selected file in a split.
+<C-t> opens currently selected file in a new tab.
+<C-s> opens currently selected file in a split.
 
-  <KUp> and <C-p> move selection up
-  <KDown> and <C-n> move selection down
+<KUp> and <C-p> move selection up
+<KDown> and <C-n> move selection down
 
-  Readline shortcuts <C-a> , <C-e>, <C-u> and <C-k> work as usual.
+Readline shortcuts <C-a> , <C-e>, <C-u> and <C-k> work as usual.
 
 Support
 =======
 
-  Don't hesitate to file an issue on github or come by #yi@freenode.
+Don't hesitate to file an issue on github or come by #yi@freenode.
