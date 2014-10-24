@@ -80,7 +80,7 @@ fuzzyOpenWithDepth d = case () of
                     (withEditor (gets (M.elems . buffers)))
     promptRef <- withEditor (spawnMinibufferE "" (const localKeymap))
     let initialState =
-            FuzzyState (V.fromList (fileList <> bufList))
+            FuzzyState (fileList <> V.fromList bufList)
                        (Just 0)
                        ""
     withGivenBuffer promptRef $ do
@@ -91,10 +91,10 @@ fuzzyOpenWithDepth d = case () of
 -- takes about 3 seconds to traverse linux kernel, which is not too outrageous
 -- TODO: check if it works at all with cyclic links
 -- TODO: perform in background, limit file count or directory depth
-getRecursiveContents :: Int -> FilePath -> IO [FilePath]
-getRecursiveContents d _ | d <= 0 = return []
+getRecursiveContents :: Int -> FilePath -> IO (V.Vector FilePath)
+getRecursiveContents d _ | d <= 0 = return mempty
 getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
-  Left _ -> return []
+  Left _ -> return mempty
   Right names -> do
     let properNames = filter predicate names
         predicate fileName = and
@@ -107,8 +107,8 @@ getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
         isDirectory <- doesDirectoryExist path
         if isDirectory
             then getRecursiveContents (d - 1) path
-            else return [path]
-    return (concat paths)
+            else return $ V.singleton path
+    return $ mconcat paths
 
 localKeymap :: Keymap
 localKeymap =
