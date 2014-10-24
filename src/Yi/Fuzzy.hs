@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_HADDOCK show-extensions #-}
@@ -32,7 +33,7 @@ import qualified Data.Vector as V
 import           GHC.Generics
 import           System.Directory (doesDirectoryExist, getDirectoryContents)
 import           System.FilePath ((</>))
-
+import           System.IO.Error
 import           Yi
 import           Yi.Completion
 import           Yi.MiniBuffer
@@ -78,8 +79,9 @@ fuzzyOpen = do
 -- TODO: check if it works at all with cyclic links
 -- TODO: perform in background, limit file count or directory depth
 getRecursiveContents :: FilePath -> IO [FilePath]
-getRecursiveContents topdir = do
-    names <- getDirectoryContents topdir
+getRecursiveContents topdir = tryIOError (getDirectoryContents topdir) >>= \case
+  Left _ -> return []
+  Right names -> do
     let properNames = filter predicate names
         predicate fileName = and
             [ fileName `notElem` [".", "..", ".git", ".svn"]
