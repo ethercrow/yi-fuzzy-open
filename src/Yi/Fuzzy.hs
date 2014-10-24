@@ -75,7 +75,7 @@ fuzzyOpenWithDepth d = case () of
   _ | d <= 0 -> printMsg "You need at least depth of 1 for fuzzyOpenWithDepth"
     | otherwise -> do
     fileList <- fmap (fmap FileItem)
-                     (liftBase (getRecursiveContents d "."))
+                     (liftBase (getRecursiveContents True d "."))
     bufList <- fmap (fmap (BufferItem . ident . attributes))
                     (withEditor (gets (M.elems . buffers)))
     promptRef <- withEditor (spawnMinibufferE "" (const localKeymap))
@@ -91,9 +91,12 @@ fuzzyOpenWithDepth d = case () of
 -- takes about 3 seconds to traverse linux kernel, which is not too outrageous
 -- TODO: check if it works at all with cyclic links
 -- TODO: perform in background, limit file count or directory depth
-getRecursiveContents :: Int -> FilePath -> IO (V.Vector FilePath)
-getRecursiveContents d _ | d <= 0 = return mempty
-getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
+getRecursiveContents :: Bool -- ^ Are we still at the top?
+                     -> Int -- ^ Depth
+                     -> FilePath -- ^ Current directory
+                     -> IO (V.Vector FilePath)
+getRecursiveContents _ d _ | d <= 0 = return mempty
+getRecursiveContents b d t = tryIOError (getDirectoryContents t) >>= \case
   Left _ -> return mempty
   Right names -> do
     let properNames = filter predicate names
@@ -102,11 +105,17 @@ getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
             , not (".hi" `isSuffixOf` fileName)
             , not ("-boot" `isSuffixOf` fileName)
             ]
+        enterpriseQuality f = any (`isSuffixOf` f) [".java", ".xml"]
+        isEnterpriseProject fs = any enterpriseQuality fs
+        enterpriseQualityScalableDepthPredicateBoolName =
+          b && isEnterpriseProject names
     paths <- forM properNames $ \name -> do
         let path = t </> name
         isDirectory <- doesDirectoryExist path
         if isDirectory
-            then getRecursiveContents (d - 1) path
+            then if enterpriseQualityScalableDepthPredicateBoolName
+                 then getRecursiveContents False (10 * d - 1) path
+                 else getRecursiveContents False (d - 1) path
             else return $ V.singleton path
     return $ mconcat paths
 
