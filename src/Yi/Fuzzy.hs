@@ -15,7 +15,7 @@
 --   TODO if need arises: factor out generic part that captures a pattern of
 --   having an interactive minibuffer and a window that just renders some state.
 
-module Yi.Fuzzy (fuzzyOpen) where
+module Yi.Fuzzy (fuzzyOpen, fuzzyOpenWithDepth, defaultDepth) where
 
 import           Control.Applicative
 import           Control.Monad
@@ -59,10 +59,23 @@ itemToString (FileItem x) = x
 itemToString (BufferItem (MemBuffer x))  = T.unpack x
 itemToString (BufferItem (FileBuffer x))  = x
 
+-- | The depth 'fuzzyOpen' should traverse by default. Currently
+-- __5__.
+defaultDepth :: Int
+defaultDepth = 5
+
+-- | Fuzzy open the current directory. The depth searched is
+-- 'defaultDepth', use fuzzyOpenWithDepth if you want to customise
+-- this.
 fuzzyOpen :: YiM ()
-fuzzyOpen = do
+fuzzyOpen = fuzzyOpenWithDepth defaultDepth
+
+fuzzyOpenWithDepth :: Int -> YiM ()
+fuzzyOpenWithDepth d = case () of
+  _ | d <= 0 -> printMsg "You need at least depth of 1 for fuzzyOpenWithDepth"
+    | otherwise -> do
     fileList <- fmap (fmap FileItem)
-                     (liftBase (getRecursiveContents "."))
+                     (liftBase (getRecursiveContents d "."))
     bufList <- fmap (fmap (BufferItem . ident . attributes))
                     (withEditor (gets (M.elems . buffers)))
     promptRef <- withEditor (spawnMinibufferE "" (const localKeymap))
@@ -78,8 +91,9 @@ fuzzyOpen = do
 -- takes about 3 seconds to traverse linux kernel, which is not too outrageous
 -- TODO: check if it works at all with cyclic links
 -- TODO: perform in background, limit file count or directory depth
-getRecursiveContents :: FilePath -> IO [FilePath]
-getRecursiveContents topdir = tryIOError (getDirectoryContents topdir) >>= \case
+getRecursiveContents :: Int -> FilePath -> IO [FilePath]
+getRecursiveContents d _ | d <= 0 = return []
+getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
   Left _ -> return []
   Right names -> do
     let properNames = filter predicate names
@@ -89,10 +103,10 @@ getRecursiveContents topdir = tryIOError (getDirectoryContents topdir) >>= \case
             , not ("-boot" `isSuffixOf` fileName)
             ]
     paths <- forM properNames $ \name -> do
-        let path = topdir </> name
+        let path = t </> name
         isDirectory <- doesDirectoryExist path
         if isDirectory
-            then getRecursiveContents path
+            then getRecursiveContents (d - 1) path
             else return [path]
     return (concat paths)
 
