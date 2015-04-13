@@ -34,4 +34,8 @@ library
     , yi-language
     , yi-rope
 
-  ghc-options: -Wall -Werror
+  ghc-options: -Wall
+
+source-repository head
+  type:     git
+  location: https://github.com/yi-editor/yi-fuzzy-open.git
