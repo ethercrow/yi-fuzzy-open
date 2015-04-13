@@ -41,6 +41,10 @@ import qualified Yi.Rope as R
 import           Yi.Types
 import           Yi.Utils ()
 
+-- The following import is a hack which silences redundant import
+-- warnings on recent (4.8.0.0) base
+import          Prelude
+
 -- FuzzyState is stored in minibuffer's dynamic state
 data FuzzyState = FuzzyState
     { _fsItems :: !(V.Vector FuzzyItem)
@@ -97,6 +101,8 @@ getRecursiveContents d t = tryIOError (getDirectoryContents t) >>= \case
   Left _ -> return mempty
   Right names -> do
     let properNames = filter predicate names
+
+        predicate :: FilePath -> Bool
         predicate fileName = and
             [ fileName `notElem` [".", "..", ".git", ".svn"]
             , not (".hi" `isSuffixOf` fileName)
