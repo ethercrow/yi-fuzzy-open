@@ -74,6 +74,8 @@ defaultDepth = 5
 fuzzyOpen :: YiM ()
 fuzzyOpen = fuzzyOpenWithDepth defaultDepth
 
+-- | Fuzzy-opens the directory to the specified depth. The depth needs
+-- to be at least @1@ for it to do anything meaningful.
 fuzzyOpenWithDepth :: Int -> YiM ()
 fuzzyOpenWithDepth d = case () of
   _ | d <= 0 -> printMsg "You need at least depth of 1 for fuzzyOpenWithDepth"
