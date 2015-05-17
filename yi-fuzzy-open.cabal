@@ -11,7 +11,7 @@ maintainer:     yi-devel@googlegroups.com
 homepage:       https://github.com/yi-editor/yi-fuzzy-open
 bug-reports:    https://github.com/yi-editor/yi-fuzzy-open/issues
 Cabal-Version:  >= 1.6
-tested-with:    GHC==7.8.3
+tested-with:    GHC==7.8.4, GHC==7.10.1
 build-type:     Simple
 
 library
@@ -34,7 +34,7 @@ library
     , yi-language
     , yi-rope
 
-  ghc-options: -Wall
+  ghc-options: -Wall -ferror-spans
 
 source-repository head
   type:     git
